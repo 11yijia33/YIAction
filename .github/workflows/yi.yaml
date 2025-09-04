@@ -1,10 +1,17 @@
+name: 打包vue项目
 on: push
 jobs:
   npm-build:
+
+    name: build工作
     runs-on: ubuntu-latest
+    
     steps:
+      name: 使用checkout
       - uses: actions/checkout@v4
-      - run: pwd
-      - run: npm --version
+
+      name: ⏬下载依赖
       - run: npm install
+
+      name: 📦打包项目
       - run: npm run build
