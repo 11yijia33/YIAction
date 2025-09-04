@@ -11,9 +11,6 @@ jobs:
 
       - name: 设置Node.js环境
         uses: actions/setup-node@v4 # 官方Node.js安装工具
-        with:
-          node-version: v20.19.4 # 指定Node.js版本（与本地开发环境一致最佳）
-          cache: "npm" # 缓存npm依赖，加速安装并避免依赖下载失败
 
       - name: ⏬下载依赖
         run: 
@@ -26,5 +23,7 @@ jobs:
             echo "Vite 安装失败，检查package.json是否包含vite"
             cat package.json  # 输出package.json内容用于排查
             exit 1
+          fi
+          
       - name: 📦打包项目
         run: npm run build
