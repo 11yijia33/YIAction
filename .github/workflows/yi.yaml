@@ -16,7 +16,15 @@ jobs:
           cache: "npm" # 缓存npm依赖，加速安装并避免依赖下载失败
 
       - name: ⏬下载依赖
-        run: npm install
-
+        run: 
+          npm cache clean --force  # 强制清理npm缓存
+          rm -rf node_modules package-lock.json  # 删除可能损坏的依赖和锁文件
+          npm install  # 重新安装依赖
+          if [ -d "node_modules/vite" ]; then
+            echo "Vite 安装成功"
+          else
+            echo "Vite 安装失败，检查package.json是否包含vite"
+            cat package.json  # 输出package.json内容用于排查
+            exit 1
       - name: 📦打包项目
         run: npm run build
