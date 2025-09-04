@@ -9,6 +9,9 @@ jobs:
       - name: 使用checkout
         uses: actions/checkout@v4
 
+      - name: 设置Node.js环境
+        uses: actions/setup-node@v4 # 官方Node.js安装工具
+
       - name: ⏬下载依赖
         run: npm install
 
