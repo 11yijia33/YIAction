@@ -1,5 +1,9 @@
 name: 打包vue项目
 on: push
+
+permissions:
+  contents: write
+
 jobs:
   npm-build:
     name: build工作
@@ -27,3 +31,9 @@ jobs:
 
       - name: 📦打包项目
         run: npm run build
+
+      - name: 🚀部署
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: build
