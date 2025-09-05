@@ -1,0 +1,63 @@
+name: 讨论区新讨论通知到企业微信群
+
+# 触发条件：当讨论被创建时
+on:
+  discussion:
+    types: [created]
+
+# 权限设置：仅需要读取内容的权限
+permissions:
+  contents: read
+  discussions: read
+
+jobs:
+  notify-wechat-group:
+    name: 发送讨论通知到企业微信群
+    runs-on: ubuntu-latest
+    steps:
+      - name: 输出讨论基本信息（调试用）
+        run: |
+          echo "讨论标题: ${{ github.event.discussion.title }}"
+          echo "讨论作者: ${{ github.event.discussion.user.login }}"
+          echo "讨论链接: ${{ github.event.discussion.html_url }}"
+
+      - name: 发送消息到企业微信群
+        run: |
+          # 构造企业微信支持的Markdown消息
+          MESSAGE=$(cat <<EOF
+          {
+            "msgtype": "markdown",
+            "markdown": {
+              "content": "### 🌟 新讨论通知\n\n"
+              "**讨论标题**：[${{ github.event.discussion.title }}](${{ github.event.discussion.html_url }})\n\n"
+              "**发起者**：[@${{ github.event.discussion.user.login }}](https://github.com/${{ github.event.discussion.user.login }})\n\n"
+              "**讨论链接**：${{ github.event.discussion.html_url }}\n\n"
+              "> 💡 欢迎点击链接参与讨论，助力社区建设！"
+            }
+          }
+          EOF
+          )
+
+          # 发送请求到企业微信群机器人
+          RESPONSE=$(curl -s -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -d "$MESSAGE" \
+            "${{ secrets.WECHAT_GROUP_WEBHOOK }}"
+          )
+
+          # 提取HTTP状态码和响应内容
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          RESPONSE_BODY=$(echo "$RESPONSE" | head -n -1)
+
+          # 检查发送结果
+          if [ "$HTTP_CODE" -eq 200 ] && [ "$(echo "$RESPONSE_BODY" | jq -r '.errcode')" -eq 0 ]; then
+            echo "✅ 通知已成功发送到企业微信群"
+          else
+            echo "❌ 通知发送失败"
+            echo "状态码: $HTTP_CODE"
+            echo "响应内容: $RESPONSE_BODY"
+            exit 1
+          fi
+        env:
+          # 确保已在GitHub Secrets中配置此变量
+          WECHAT_GROUP_WEBHOOK: ${{ secrets.WECHAT_GROUP_WEBHOOK }}
